@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Cybersecurity — Laws and Ethics</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Barlow:wght@400;500;600&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+/* ===================== tokens ===================== */
+:root{
+  --deep:#04222e; --ocean:#0a3d52; --lagoon:#12809b;
+  --ice:#7ff0ff; --glow:#29d2f2; --paper:#eafcff; --dim:#a8d8e6; --warn:#ffd166;
+  --edge:1px solid rgba(127,240,255,.45);
+  --rad:14px;
+  --shell:min(1060px,90vw);
+  --rail:74px;
+  --ease:cubic-bezier(.22,.8,.3,1);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;font-family:"Barlow",system-ui,sans-serif;color:var(--paper);
+  background:var(--deep);line-height:1.6;overflow-x:hidden;-webkit-font-smoothing:antialiased;
+}
+::selection{background:var(--ice);color:#04222e}
+
+/* ===================== backdrop layers ===================== */
+.backdrop{position:fixed;inset:0;z-index:-4;
+  background:
+    radial-gradient(1100px 700px at 78% -8%,rgba(41,210,242,.30),transparent 62%),
+    radial-gradient(900px 640px at 6% 34%,rgba(18,128,155,.34),transparent 60%),
+    linear-gradient(170deg,#0b5e78 0%,#083d52 42%,#04222e 100%);
+}
+/* honeycomb */
+.hex{position:fixed;inset:0;z-index:-3;opacity:.14;pointer-events:none}
+/* falling data */
+#rain{position:fixed;inset:0;z-index:-2;opacity:.30;pointer-events:none}
+/* circuit traces */
+.grid-lines{position:fixed;inset:0;z-index:-1;opacity:.2;pointer-events:none}
+.grid-lines path,.grid-lines circle{stroke:var(--ice);fill:none}
+.pulse{stroke-dasharray:6 260;animation:trace 9s linear infinite}
+.pulse:nth-of-type(2){animation-delay:-2.4s}
+.pulse:nth-of-type(3){animation-delay:-5.1s}
+.pulse:nth-of-type(4){animation-delay:-7.3s}
+@keyframes trace{to{stroke-dashoffset:-266}}
+/* scanline sweep */
+.scan{position:fixed;left:0;right:0;height:180px;z-index:0;pointer-events:none;
+  background:linear-gradient(180deg,transparent,rgba(127,240,255,.055),transparent);
+  animation:sweep 11s linear infinite}
+@keyframes sweep{0%{top:-180px}100%{top:100%}}
+
+/* ===================== side rails ===================== */
+.rail{position:fixed;top:0;bottom:0;width:var(--rail);z-index:30;pointer-events:none;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1rem}
+.rail::before{content:"";position:absolute;top:0;bottom:0;width:1px;background:
+  linear-gradient(180deg,transparent,rgba(127,240,255,.35) 18%,rgba(127,240,255,.35) 82%,transparent)}
+.rail-l{left:0}.rail-l::before{right:14px}
+.rail-r{right:0}.rail-r::before{left:14px}
+
+.vtext{writing-mode:vertical-rl;font-family:"Chakra Petch",sans-serif;font-weight:600;
+  font-size:.66rem;letter-spacing:.34em;color:var(--dim);text-transform:uppercase;opacity:.75}
+.rail-l .vtext{transform:rotate(180deg)}
+
+/* section dots nav */
+.dots{pointer-events:auto;display:flex;flex-direction:column;gap:.9rem;align-items:center;
+  padding:.9rem .5rem;border:var(--edge);border-radius:999px;background:rgba(4,34,46,.55);
+  backdrop-filter:blur(6px)}
+.dot{width:9px;height:9px;border-radius:50%;border:1px solid var(--ice);background:transparent;
+  padding:0;cursor:pointer;position:relative;transition:transform .25s var(--ease),background .25s}
+.dot:hover{transform:scale(1.35)}
+.dot[aria-current="true"]{background:var(--warn);border-color:var(--warn);
+  box-shadow:0 0 12px var(--warn)}
+.dot span{position:absolute;left:18px;top:50%;transform:translateY(-50%) translateX(-4px);
+  white-space:nowrap;font:600 .62rem/1 "Chakra Petch",sans-serif;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--ice);background:rgba(4,34,46,.9);border:var(--edge);
+  border-radius:5px;padding:.35rem .5rem;opacity:0;pointer-events:none;transition:.2s}
+.dot:hover span,.dot:focus-visible span{opacity:1;transform:translateY(-50%)}
+
+/* binary stream */
+.stream{font-family:"Share Tech Mono",monospace;font-size:.62rem;line-height:1.45;
+  color:var(--ice);opacity:.35;writing-mode:vertical-rl;letter-spacing:.14em;
+  height:44vh;overflow:hidden}
+
+/* ===================== top bar ===================== */
+.bar{position:sticky;top:0;z-index:40;backdrop-filter:blur(10px);
+  background:rgba(4,34,46,.74);border-bottom:1px solid rgba(127,240,255,.22)}
+.bar-in{width:var(--shell);margin:0 auto;display:flex;align-items:center;gap:1rem;
+  justify-content:space-between;padding:.7rem 0}
+.month{font-family:"Chakra Petch",sans-serif;font-weight:600;letter-spacing:.16em;
+  font-size:.7rem;color:var(--ice);text-transform:uppercase;display:flex;align-items:center;gap:.55rem}
+.led{width:7px;height:7px;border-radius:50%;background:var(--warn);
+  box-shadow:0 0 10px var(--warn);animation:blink 2.4s ease-in-out infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
+.progress{position:absolute;left:0;bottom:-1px;height:2px;width:0;
+  background:linear-gradient(90deg,var(--glow),var(--warn));box-shadow:0 0 10px var(--glow)}
+.switch{display:flex;border:var(--edge);border-radius:999px;padding:3px;gap:3px;background:rgba(4,34,46,.6)}
+.switch button{font:600 .74rem/1 "Chakra Petch",sans-serif;letter-spacing:.06em;color:var(--dim);
+  background:none;border:0;border-radius:999px;padding:.5rem .85rem;cursor:pointer;transition:.2s}
+.switch button[aria-pressed="true"]{background:var(--ice);color:#04222e}
+:focus-visible{outline:2px solid var(--warn);outline-offset:3px}
+
+/* ===================== hero ===================== */
+header.hero{width:var(--shell);margin:0 auto;padding:clamp(3rem,8vw,5.5rem) 0 2.2rem;position:relative}
+.frame{position:absolute;width:26px;height:26px;border:2px solid var(--ice);opacity:.55}
+.frame.tl{top:18px;left:-26px;border-right:0;border-bottom:0}
+.frame.tr{top:18px;right:-26px;border-left:0;border-bottom:0}
+.frame.bl{bottom:6px;left:-26px;border-right:0;border-top:0}
+.frame.br{bottom:6px;right:-26px;border-left:0;border-top:0}
+.stripes{display:flex;gap:5px;margin-bottom:1.1rem}
+.stripes i{width:26px;height:7px;background:var(--ice);transform:skewX(-28deg);opacity:.85;
+  animation:slide 2.6s var(--ease) infinite}
+.stripes i:nth-child(2){opacity:.6;animation-delay:.18s}
+.stripes i:nth-child(3){opacity:.35;animation-delay:.36s}
+@keyframes slide{0%,70%,100%{transform:skewX(-28deg) translateX(0)}35%{transform:skewX(-28deg) translateX(8px)}}
+h1{font-family:"Chakra Petch",sans-serif;font-weight:700;font-size:clamp(2.5rem,7.8vw,5.2rem);
+  line-height:.95;margin:0;letter-spacing:-.01em;text-transform:uppercase;
+  text-shadow:0 0 34px rgba(41,210,242,.45)}
+h1 .glitch{position:relative;display:inline-block}
+h1 .glitch::after{content:attr(data-t);position:absolute;left:2px;top:0;color:var(--glow);
+  opacity:.5;clip-path:inset(0 0 62% 0);animation:jit 5.5s steps(2,end) infinite}
+@keyframes jit{0%,92%,100%{transform:translate(0,0)}94%{transform:translate(-3px,1px)}96%{transform:translate(3px,-1px)}}
+.sub{font-family:"Share Tech Mono",monospace;font-size:clamp(.95rem,2.6vw,1.35rem);
+  letter-spacing:.06em;color:var(--ice);margin:.7rem 0 0;display:flex;align-items:center;gap:.8rem;
+  text-transform:uppercase;min-height:1.6em}
+.caret{display:inline-block;width:.6ch;background:var(--ice);animation:blink 1s steps(1) infinite}
+.sub::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,var(--ice),transparent)}
+.lede{display:grid;grid-template-columns:1.6fr 1fr;gap:1.6rem;margin-top:2.4rem;align-items:start}
+.lede>p{margin:0;font-size:1.05rem;max-width:60ch}
+.ask{position:relative;border:var(--edge);border-radius:var(--rad);padding:1.1rem 1.25rem;
+  background:linear-gradient(150deg,rgba(41,210,242,.30),rgba(18,128,155,.16));
+  box-shadow:0 0 30px rgba(41,210,242,.18)}
+.ask::after{content:"";position:absolute;inset:5px;border:1px dashed rgba(127,240,255,.3);
+  border-radius:9px;pointer-events:none}
+.ask h2{font-family:"Chakra Petch",sans-serif;font-size:.8rem;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--ice);margin:0 0 .35rem}
+.ask p{margin:0;font-size:1.3rem;font-weight:600;line-height:1.25}
+.scroll-cue{margin-top:2.6rem;display:flex;align-items:center;gap:.6rem;color:var(--dim);
+  font:600 .68rem/1 "Chakra Petch",sans-serif;letter-spacing:.18em;text-transform:uppercase}
+.scroll-cue i{width:1px;height:26px;background:linear-gradient(180deg,var(--ice),transparent);
+  animation:drop 2s ease-in-out infinite}
+@keyframes drop{0%,100%{transform:translateY(-4px);opacity:.4}50%{transform:translateY(4px);opacity:1}}
+
+/* ===================== sections ===================== */
+main{width:var(--shell);margin:0 auto;padding-bottom:4rem}
+.section-head{font-family:"Chakra Petch",sans-serif;font-weight:600;letter-spacing:.14em;
+  text-transform:uppercase;font-size:.85rem;color:var(--ice);margin:3rem 0 1.4rem;
+  display:flex;align-items:center;gap:.9rem}
+.section-head::after{content:"";flex:1;height:1px;
+  background:repeating-linear-gradient(90deg,rgba(127,240,255,.45) 0 8px,transparent 8px 16px)}
+
+article.law{position:relative;display:grid;grid-template-columns:auto 1fr auto;gap:1rem 1.4rem;
+  align-items:start;border:var(--edge);border-left:3px solid var(--glow);border-radius:var(--rad);
+  background:linear-gradient(140deg,rgba(18,128,155,.42),rgba(10,61,82,.55));
+  padding:1.35rem 1.4rem;margin-bottom:1.1rem;overflow:hidden;
+  opacity:0;transform:translateY(16px);transition:box-shadow .3s,border-color .3s,transform .6s var(--ease),opacity .6s var(--ease)}
+.law.in{opacity:1;transform:none}
+.law::before{content:"";position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(115deg,transparent 40%,rgba(127,240,255,.10) 50%,transparent 60%);
+  transform:translateX(-100%);transition:transform .8s var(--ease)}
+.law:hover::before{transform:translateX(100%)}
+.law:hover{border-color:var(--ice);box-shadow:0 0 34px rgba(41,210,242,.25)}
+.law::after{content:"";position:absolute;right:10px;bottom:8px;width:20px;height:20px;
+  border-right:2px solid rgba(127,240,255,.5);border-bottom:2px solid rgba(127,240,255,.5);
+  border-bottom-right-radius:6px}
+.num{font-family:"Chakra Petch",sans-serif;font-weight:700;font-size:1.5rem;color:var(--warn);
+  line-height:1;min-width:2.1ch;padding-top:.1rem;position:relative}
+.num::after{content:"";position:absolute;left:.15rem;top:2.1rem;bottom:-.6rem;width:1px;
+  background:linear-gradient(180deg,rgba(255,209,102,.55),transparent)}
+.law h3{font-family:"Chakra Petch",sans-serif;font-weight:600;font-size:1.2rem;margin:0 0 .5rem;line-height:1.25}
+.tag{display:inline-block;margin-left:.5rem;vertical-align:middle;
+  font:600 .64rem/1 "Chakra Petch",sans-serif;letter-spacing:.1em;color:#04222e;
+  background:var(--ice);border-radius:4px;padding:.28rem .45rem}
+.law p{margin:0;font-size:.98rem;max-width:66ch}
+.law ul{margin:0;padding-left:1.05rem;max-width:64ch}
+.law li{margin:.2rem 0;font-size:.97rem}
+.law li::marker{color:var(--glow)}
+.icon{width:58px;height:58px;stroke:var(--ice);fill:none;stroke-width:1.6;
+  stroke-linecap:round;stroke-linejoin:round;opacity:.85;justify-self:end;transition:.35s var(--ease)}
+.law:hover .icon{opacity:1;transform:scale(1.07);filter:drop-shadow(0 0 10px rgba(41,210,242,.7))}
+.body[hidden]{display:none}
+
+/* ===================== facts ===================== */
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1px;
+  background:rgba(127,240,255,.28);border:var(--edge);border-radius:var(--rad);
+  overflow:hidden;margin-top:2.6rem}
+.fact{background:linear-gradient(150deg,rgba(10,61,82,.92),rgba(4,34,46,.92));padding:1.2rem;
+  transition:background .3s}
+.fact:hover{background:linear-gradient(150deg,rgba(18,128,155,.55),rgba(4,34,46,.92))}
+.fact b{display:block;font-family:"Chakra Petch",sans-serif;font-size:1.75rem;color:var(--warn);line-height:1.1}
+.fact span{font-size:.85rem;color:var(--dim)}
+
+/* ===================== footer ===================== */
+footer{width:var(--shell);margin:0 auto;padding:2rem 0 4.5rem;
+  border-top:1px solid rgba(127,240,255,.22);color:var(--dim);font-size:.85rem}
+footer strong{color:var(--paper);font-weight:600}
+.top{position:fixed;right:calc(var(--rail) + 8px);bottom:22px;z-index:35;
+  width:42px;height:42px;border:var(--edge);border-radius:50%;background:rgba(4,34,46,.8);
+  color:var(--ice);cursor:pointer;display:grid;place-items:center;opacity:0;pointer-events:none;
+  transition:.3s;backdrop-filter:blur(6px)}
+.top.show{opacity:1;pointer-events:auto}
+.top:hover{background:var(--ice);color:#04222e}
+
+/* ===================== responsive ===================== */
+@media (max-width:1180px){ .rail{display:none} }
+@media (max-width:760px){
+  :root{--shell:90vw}
+  .lede{grid-template-columns:1fr}
+  .frame{display:none}
+  article.law{grid-template-columns:auto 1fr;gap:.8rem 1rem}
+  .icon{grid-column:1/-1;justify-self:start;width:46px;height:46px}
+  .bar-in{flex-direction:column;align-items:flex-start;gap:.5rem}
+  .top{right:14px}
+}
+@media (prefers-reduced-motion:reduce){
+  *{animation:none!important;transition:none!important}
+  article.law{opacity:1;transform:none}
+  html{scroll-behavior:auto}
+  #rain,.scan{display:none}
+}
+</style>
+</head>
+<body>
+
+<!-- ============ background layers ============ -->
+<div class="backdrop"></div>
+<svg class="hex" aria-hidden="true">
+  <defs>
+    <pattern id="honey" width="56" height="97" patternUnits="userSpaceOnUse" patternTransform="scale(.85)">
+      <path d="M28 0 L56 16 L56 48 L28 64 L0 48 L0 16 Z" fill="none" stroke="#7ff0ff" stroke-width="1"/>
+      <path d="M28 64 L56 80 L56 112 L28 128 L0 112 L0 80 Z" fill="none" stroke="#7ff0ff" stroke-width="1"/>
+    </pattern>
+  </defs>
+  <rect width="100%" height="100%" fill="url(#honey)"/>
+</svg>
+<canvas id="rain" aria-hidden="true"></canvas>
+<svg class="grid-lines" preserveAspectRatio="none" viewBox="0 0 1200 800" aria-hidden="true">
+  <path d="M0 120 H320 L400 200 H760 L820 140 H1200" class="pulse"/>
+  <path d="M0 380 H180 L260 300 H640 L700 380 H1200" class="pulse"/>
+  <path d="M0 560 H420 L500 640 H900 L960 560 H1200" class="pulse"/>
+  <path d="M0 740 H260 L340 660 H820 L880 740 H1200" class="pulse"/>
+  <circle cx="400" cy="200" r="4"/><circle cx="640" cy="300" r="4"/>
+  <circle cx="500" cy="640" r="4"/><circle cx="880" cy="740" r="4"/>
+</svg>
+<div class="scan" aria-hidden="true"></div>
+
+<!-- ============ side rails ============ -->
+<aside class="rail rail-l" aria-label="Section navigation">
+  <span class="vtext">RA 10175 · RA 10173</span>
+  <nav class="dots" id="dots">
+    <button class="dot" data-target="s1"><span>Access is the crime</span></button>
+    <button class="dot" data-target="s2"><span>Civil liability</span></button>
+    <button class="dot" data-target="s3"><span>System interference</span></button>
+    <button class="dot" data-target="s4"><span>Data privacy</span></button>
+    <button class="dot" data-target="s5"><span>After sentencing</span></button>
+  </nav>
+  <span class="vtext">Scroll to explore</span>
+</aside>
+
+<aside class="rail rail-r" aria-hidden="true">
+  <span class="vtext">Awareness · Ethics · Consent</span>
+  <div class="stream" id="stream"></div>
+  <span class="vtext">Secure by default</span>
+</aside>
+
+<!-- ============ top bar ============ -->
+<div class="bar">
+  <div class="bar-in">
+    <span class="month"><i class="led"></i>Cybersecurity Awareness Month</span>
+    <div class="switch" role="group" aria-label="Reading mode">
+      <button id="btn-full" aria-pressed="true">Full explanation</button>
+      <button id="btn-quick" aria-pressed="false">Quick points</button>
+    </div>
+  </div>
+  <div class="progress" id="progress"></div>
+</div>
+
+<!-- ============ hero ============ -->
+<header class="hero">
+  <i class="frame tl"></i><i class="frame tr"></i><i class="frame bl"></i><i class="frame br"></i>
+  <div class="stripes"><i></i><i></i><i></i></div>
+  <h1>Cybersecurity —<br><span class="glitch" data-t="Laws and Ethics">Laws and Ethics</span></h1>
+  <p class="sub"><span id="typed"></span><span class="caret">&nbsp;</span></p>
+
+  <div class="lede">
+    <p>Unauthorized access to a computer system is a crime the moment it happens — regardless of
+       intent, skill, or whether any damage occurs.</p>
+    <div class="ask">
+      <h2>The key question</h2>
+      <p>Do you have permission?</p>
+    </div>
+  </div>
+
+  <div class="scroll-cue"><i></i>Five ways the law responds</div>
+</header>
+
+<main>
+  <h2 class="section-head">How the law holds hackers accountable</h2>
+
+  <article class="law" id="s1">
+    <span class="num">1</span>
+    <div>
+      <h3>Access alone is the crime</h3>
+      <div class="body body-full">
+        <p>Unauthorized access is a punishable offense on its own — no theft or damage required.
+           Penalties scale with intent: basic access carries lighter sentences, while access paired
+           with fraud, system damage, or harm to critical infrastructure can mean years, even life,
+           in prison.</p>
+      </div>
+      <div class="body body-quick" hidden>
+        <ul>
+          <li>Unauthorized access is punishable on its own</li>
+          <li>No theft or damage required</li>
+          <li>Penalties scale with intent</li>
+          <li>Can mean years, even life, in prison</li>
+        </ul>
+      </div>
+    </div>
+    <svg class="icon" viewBox="0 0 48 48" aria-hidden="true">
+      <circle cx="24" cy="24" r="20"/><line x1="10" y1="38" x2="38" y2="10"/>
+      <circle cx="26" cy="15" r="3"/><path d="M20 34v-6l-3-6 6-3 5 4 4 1"/><path d="M28 34l-2-6"/>
+    </svg>
+  </article>
+
+  <article class="law" id="s2">
+    <span class="num">2</span>
+    <div>
+      <h3>Civil liability</h3>
+      <div class="body body-full">
+        <p>Beyond criminal charges, victims can separately sue for damages — covering financial
+           losses, remediation costs, and harm caused. This liability exists independently of any
+           criminal case and can add up to far more than a fine.</p>
+      </div>
+      <div class="body body-quick" hidden>
+        <ul>
+          <li>Victims can separately sue for damages</li>
+          <li>Covers financial losses and remediation costs</li>
+          <li>Applies independently of criminal charges</li>
+          <li>Can exceed any criminal fine</li>
+        </ul>
+      </div>
+    </div>
+    <svg class="icon" viewBox="0 0 48 48" aria-hidden="true">
+      <path d="M6 40h20"/><path d="M10 40l6-14 8 4-4 10"/><circle cx="20" cy="18" r="4"/>
+      <circle cx="36" cy="16" r="9"/><path d="M36 11v10M33.5 13.5h5M33.5 18.5h5"/>
+    </svg>
+  </article>
+
+  <article class="law" id="s3">
+    <span class="num">3</span>
+    <div>
+      <h3>Data &amp; system interference <span class="tag">RA 10175</span></h3>
+      <div class="body body-full">
+        <p>Damaging, altering, or disrupting computer data or systems — including denial-of-service
+           attacks — carries the same penalty range as illegal access. But if the target is critical
+           infrastructure (banks, utilities, government systems), the sentence jumps to 12–20 years
+           and fines starting at ₱500,000.</p>
+      </div>
+      <div class="body body-quick" hidden>
+        <ul>
+          <li>Covers damaging, altering, or disrupting data and systems</li>
+          <li>Includes denial-of-service attacks</li>
+          <li>Same penalty range as illegal access</li>
+          <li>Critical infrastructure targets: 12–20 years + ₱500,000 fine</li>
+        </ul>
+      </div>
+    </div>
+    <svg class="icon" viewBox="0 0 48 48" aria-hidden="true">
+      <rect x="6" y="10" width="26" height="8" rx="2"/><rect x="6" y="22" width="26" height="8" rx="2"/>
+      <path d="M14 38h20"/><circle cx="38" cy="14" r="8"/><path d="M38 10v8M34 14h8"/>
+    </svg>
+  </article>
+
+  <article class="law" id="s4">
+    <span class="num">4</span>
+    <div>
+      <h3>Data privacy violations <span class="tag">RA 10173</span></h3>
+      <div class="body body-full">
+        <p>When a hack exposes personal data, a separate law applies. Unauthorized processing or
+           access to personal information carries 1–6 years imprisonment and fines up to ₱4,000,000 —
+           increasing further if the victim is a minor or the data is sensitive.</p>
+      </div>
+      <div class="body body-quick" hidden>
+        <ul>
+          <li>Applies when a hack exposes personal data</li>
+          <li>1–6 years imprisonment</li>
+          <li>Fines up to ₱4,000,000</li>
+          <li>Harsher if the victim is a minor or the data is sensitive</li>
+        </ul>
+      </div>
+    </div>
+    <svg class="icon" viewBox="0 0 48 48" aria-hidden="true">
+      <path d="M24 5l16 6v12c0 10-7 17-16 20C15 40 8 33 8 23V11z"/>
+      <rect x="18" y="22" width="12" height="10" rx="2"/><path d="M21 22v-3a3 3 0 016 0v3"/>
+    </svg>
+  </article>
+
+  <article class="law" id="s5">
+    <span class="num">5</span>
+    <div>
+      <h3>The consequences don't end at sentencing</h3>
+      <div class="body body-full">
+        <p>Beyond prison, a conviction can mean years paying back victims in restitution, losing the
+           very computer access your skills depend on, being denied entry into other countries,
+           facing fresh lawsuits long after release — and a criminal record that follows you, and
+           your family, everywhere you go. One bad decision, a lifetime of paying for it.</p>
+      </div>
+      <div class="body body-quick" hidden>
+        <ul>
+          <li>Years paying restitution to victims</li>
+          <li>Loss of computer and internet access</li>
+          <li>Denied entry into other countries</li>
+          <li>Fresh lawsuits even after release</li>
+        </ul>
+      </div>
+    </div>
+    <svg class="icon" viewBox="0 0 48 48" aria-hidden="true">
+      <path d="M8 8h8M8 8v8M40 8h-8M40 8v8M8 40h8M8 40v-8M40 40h-8M40 40v-8"/>
+      <path d="M12 24c4-6 8-9 12-9s8 3 12 9c-4 6-8 9-12 9s-8-3-12-9z"/><circle cx="24" cy="24" r="3.5"/>
+    </svg>
+  </article>
+
+  <div class="facts">
+    <div class="fact"><b data-count="20" data-prefix="12–">12–20</b><span>Years for attacks on critical infrastructure</span></div>
+    <div class="fact"><b data-count="4" data-prefix="₱" data-suffix="M">₱4M</b><span>Maximum fine under the Data Privacy Act</span></div>
+    <div class="fact"><b data-count="6" data-prefix="1–">1–6</b><span>Years for unauthorized access to personal data</span></div>
+    <div class="fact"><b data-count="0">0</b><span>Damage needed for access to count as a crime</span></div>
+  </div>
+</main>
+
+<footer>
+  <p><strong>Before you touch a system, get written permission.</strong> Testing without it is not
+     research — it is illegal access. Penalties referenced here come from the Cybercrime Prevention
+     Act of 2012 (RA 10175) and the Data Privacy Act of 2012 (RA 10173). This page is for awareness,
+     not legal advice.</p>
+</footer>
+
+<button class="top" id="top" aria-label="Back to top">
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"
+       stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+</button>
+
+<script>
+(function () {
+  var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---------- reading mode ---------- */
+  var full = document.getElementById('btn-full'), quick = document.getElementById('btn-quick');
+  function setMode(isQuick) {
+    document.querySelectorAll('.body-full').forEach(function (el) { el.hidden = isQuick; });
+    document.querySelectorAll('.body-quick').forEach(function (el) { el.hidden = !isQuick; });
+    full.setAttribute('aria-pressed', String(!isQuick));
+    quick.setAttribute('aria-pressed', String(isQuick));
+  }
+  full.addEventListener('click', function () { setMode(false); });
+  quick.addEventListener('click', function () { setMode(true); });
+
+  /* ---------- typed subtitle ---------- */
+  var line = 'Legal consequences of hacking', out = document.getElementById('typed'), i = 0;
+  if (reduced) { out.textContent = line; }
+  else (function type() {
+    out.textContent = line.slice(0, i++);
+    if (i <= line.length) setTimeout(type, 55);
+  })();
+
+  /* ---------- binary stream on the right rail ---------- */
+  var stream = document.getElementById('stream');
+  function bits(n) {
+    var s = '';
+    for (var k = 0; k < n; k++) s += Math.random() < .5 ? '0' : '1';
+    return s;
+  }
+  stream.textContent = bits(320);
+  if (!reduced) setInterval(function () { stream.textContent = bits(320); }, 900);
+
+  /* ---------- falling data canvas ---------- */
+  var cv = document.getElementById('rain');
+  if (cv && cv.getContext && !reduced) {
+    var ctx = cv.getContext('2d'), cols, drops, size = 14;
+    var chars = '01<>{}[]#$%&*/\\|=+ABCDEF';
+    function resize() {
+      cv.width = window.innerWidth; cv.height = window.innerHeight;
+      cols = Math.floor(cv.width / size); drops = [];
+      for (var c = 0; c < cols; c++) drops[c] = Math.random() * -60;
+    }
+    resize();
+    window.addEventListener('resize', resize);
+    setInterval(function () {
+      ctx.fillStyle = 'rgba(4,34,46,0.10)';
+      ctx.fillRect(0, 0, cv.width, cv.height);
+      ctx.fillStyle = '#7ff0ff';
+      ctx.font = size + 'px "Share Tech Mono", monospace';
+      for (var c = 0; c < cols; c++) {
+        var ch = chars[Math.floor(Math.random() * chars.length)];
+        ctx.fillText(ch, c * size, drops[c] * size);
+        if (drops[c] * size > cv.height && Math.random() > 0.975) drops[c] = 0;
+        drops[c]++;
+      }
+    }, 70);
+  }
+
+  /* ---------- scroll progress + back to top ---------- */
+  var bar = document.getElementById('progress'), top = document.getElementById('top');
+  function onScroll() {
+    var h = document.documentElement, max = h.scrollHeight - h.clientHeight;
+    bar.style.width = (max > 0 ? (h.scrollTop / max) * 100 : 0) + '%';
+    top.classList.toggle('show', h.scrollTop > 600);
+  }
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+  top.addEventListener('click', function () { window.scrollTo({ top: 0, behavior: reduced ? 'auto' : 'smooth' }); });
+
+  /* ---------- rail dot navigation ---------- */
+  var dots = [].slice.call(document.querySelectorAll('.dot'));
+  dots.forEach(function (d) {
+    d.addEventListener('click', function () {
+      var el = document.getElementById(d.dataset.target);
+      if (el) el.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'center' });
+    });
+  });
+
+  /* ---------- reveal + active dot + counters ---------- */
+  var cards = [].slice.call(document.querySelectorAll('.law'));
+  if (!window.IntersectionObserver) {
+    cards.forEach(function (c) { c.classList.add('in'); });
+  } else {
+    var reveal = new IntersectionObserver(function (es) {
+      es.forEach(function (e) {
+        if (e.isIntersecting) { e.target.classList.add('in'); reveal.unobserve(e.target); }
+      });
+    }, { threshold: 0.15 });
+    cards.forEach(function (c) { reveal.observe(c); });
+
+    var active = new IntersectionObserver(function (es) {
+      es.forEach(function (e) {
+        if (!e.isIntersecting) return;
+        dots.forEach(function (d) {
+          d.setAttribute('aria-current', String(d.dataset.target === e.target.id));
+        });
+      });
+    }, { threshold: 0.5 });
+    cards.forEach(function (c) { active.observe(c); });
+
+    var nums = new IntersectionObserver(function (es) {
+      es.forEach(function (e) {
+        if (!e.isIntersecting) return;
+        nums.unobserve(e.target);
+        var el = e.target, end = +el.dataset.count;
+        var pre = el.dataset.prefix || '', suf = el.dataset.suffix || '';
+        if (reduced || end === 0) { el.textContent = pre + end + suf; return; }
+        var n = 0, step = Math.max(1, Math.round(end / 24));
+        var id = setInterval(function () {
+          n += step;
+          if (n >= end) { n = end; clearInterval(id); }
+          el.textContent = pre + n + suf;
+        }, 35);
+      });
+    }, { threshold: 0.6 });
+    document.querySelectorAll('[data-count]').forEach(function (el) { nums.observe(el); });
+  }
+})();
+</script>
+</body>
+</html>
