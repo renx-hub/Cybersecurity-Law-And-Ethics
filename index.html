@@ -219,6 +219,20 @@ footer strong{color:var(--paper);font-weight:600}
   html{scroll-behavior:auto}
   #rain,.scan{display:none}
 }
+
+
+  .footer-logo-wrap {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+}
+
+.footer-logo {
+    width: 80px;
+    height: 80px;
+    object-fit: contain;
+}
 </style>
 </head>
 <body>
@@ -430,6 +444,13 @@ footer strong{color:var(--paper);font-weight:600}
 </main>
 
 <footer>
+
+
+  <div class="footer-logo-wrap">
+    <img class="footer-logo" src="logo1.png" alt="Cybersecurity awareness logo1">
+    <img class="footer-logo" src="logo2.png" alt="Cybersecurity awareness logo2">
+  </div>
+  
   <p><strong>Before you touch a system, get written permission.</strong> Testing without it is not
      research — it is illegal access. Penalties referenced here come from the Cybercrime Prevention
      Act of 2012 (RA 10175) and the Data Privacy Act of 2012 (RA 10173). This page is for awareness,
